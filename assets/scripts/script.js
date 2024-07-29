@@ -164,6 +164,33 @@ document.getElementById('change-background-button').addEventListener('click', ch
 document.getElementById('download-background-button').addEventListener('click', downloadBackground);
 
 
+
+function getZoomLevel() {
+  // Obtener el nivel de zoom basado en devicePixelRatio
+  return window.devicePixelRatio || 1;
+}
+
+function applyStylesBasedOnZoom() {
+  const zoomLevel = getZoomLevel();
+  const body = document.body;
+  
+  // Remover clases previas relacionadas con el zoom
+  body.classList.remove('zoom-level-1', 'zoom-level-2', 'zoom-level-3');
+
+  // Aplicar clases basadas en el nivel de zoom
+  if (zoomLevel <= 1.25) {
+    body.classList.add('zoom-level-1');
+  } else if (zoomLevel > 1.25 && zoomLevel <= 2) {
+    body.classList.add('zoom-level-2');
+  } else {
+    body.classList.add('zoom-level-3');
+  }
+}
+
+// Ejecutar la función al cargar la página y al cambiar el tamaño de la ventana
+window.addEventListener('load', applyStylesBasedOnZoom);
+window.addEventListener('resize', applyStylesBasedOnZoom);
+
 const Confettiful = function (el) {
     this.el = el;
     this.containerEl = null;
