@@ -63,43 +63,105 @@ const images = [
   './assets/images/png/59.jpg'
   // Agrega más rutas de imágenes según sea necesario
 ];
-let currentBackgroundImage = '';
 
-// Función para seleccionar una imagen al azar
-function getRandomImage(arr) {
+const videos = [
+  './assets/images/png/1.mp4',
+  './assets/images/png/2.mp4',
+  './assets/images/png/3.mp4',
+];
+
+let currentBackground = '';
+let isVideo = false;
+const backgroundContainer = document.getElementById('background-container');
+
+// Función para seleccionar un elemento al azar
+function getRandomElement(arr) {
   const randomIndex = Math.floor(Math.random() * arr.length);
   return arr[randomIndex];
 }
 
-// Función para cambiar la imagen de fondo
-function changeBackgroundImage() {
-  currentBackgroundImage = getRandomImage(images);
-  document.body.style.backgroundImage = `url(${currentBackgroundImage})`;
+// Función para cambiar la imagen o video de fondo
+function changeBackground() {
+  // Decide aleatoriamente si usar una imagen o un video
+  isVideo = Math.random() < 0.5;
+
+  if (isVideo) {
+    currentBackground = getRandomElement(videos);
+    backgroundContainer.style.backgroundImage = '';
+    setVideoBackground(currentBackground);
+  } else {
+    currentBackground = getRandomElement(images);
+    backgroundContainer.style.backgroundImage = `url(${currentBackground})`;
+    removeVideoBackground();
+  }
+}
+
+// Función para establecer un video como fondo
+function setVideoBackground(videoSrc) {
+  let video = document.getElementById('background-video');
+
+  if (!video) {
+      video = document.createElement('video');
+      video.id = 'background-video';
+      video.loop = true;
+      video.muted = true;
+      video.autoplay = true;
+      video.style.position = 'absolute';
+      video.style.top = '30%';
+      video.style.left = '50%';
+      video.style.width = '50%';
+      video.style.height = '50%';
+      video.style.minWidth = '50%';
+      video.style.minHeight = '50%';
+      video.style.transform = 'translate(-50%, -50%)';
+      backgroundContainer.appendChild(video);
+  }
+
+  if (window.innerWidth < 600) {
+    video.style.position = 'absolute';
+    video.style.top = '23%';
+    video.style.left = '50%';
+    video.style.width = '70%';
+    video.style.height = '70%';
+    video.style.minWidth = '70%';
+    video.style.minHeight = '70%';
+    video.style.transform = 'translate(-50%, -50%)';
+  } 
+
+  video.src = videoSrc;
+}
+
+// Función para remover el video de fondo
+function removeVideoBackground() {
+  const video = document.getElementById('background-video');
+  if (video) {
+    video.remove();
+  }
 }
 
 // Función para descargar la imagen de fondo
-function downloadBackgroundImage() {
-  fetch(currentBackgroundImage)
+function downloadBackground() {
+  fetch(currentBackground)
     .then(response => response.blob())
     .then(blob => {
       const link = document.createElement('a');
       const url = URL.createObjectURL(blob);
       link.href = url;
-      link.download = currentBackgroundImage.split('/').pop();
+      link.download = currentBackground.split('/').pop();
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
     })
-    .catch(error => console.error('Error al descargar la imagen:', error));
+    .catch(error => console.error('Error al descargar el archivo:', error));
 }
 
 // Seleccionar una imagen al azar al cargar la página
-changeBackgroundImage();
+changeBackground();
 
 // Añadir eventos a los botones
-document.getElementById('change-background-button').addEventListener('click', changeBackgroundImage);
-document.getElementById('download-background-button').addEventListener('click', downloadBackgroundImage);
+document.getElementById('change-background-button').addEventListener('click', changeBackground);
+document.getElementById('download-background-button').addEventListener('click', downloadBackground);
 
 
 const Confettiful = function (el) {
@@ -174,10 +236,6 @@ var span = document.getElementsByClassName("close")[0];
 // Get the input field in the modal
 var modalInput = document.getElementById("modalInput");
 
-// When the user clicks the button, open the modal
-btn.onclick = function() {
-    modal.style.display = "block";
-}
 
 var loader = document.getElementById("loader");
 
