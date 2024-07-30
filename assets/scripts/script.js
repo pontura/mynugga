@@ -1,4 +1,62 @@
-// Confetti
+
+//Confetti! 
+
+const Confettiful = function (el) {
+  this.el = el;
+  this.containerEl = null;
+
+  this.confettiFrequency = 3;
+  this.confettiColors = ["#fce18a", "#ff726d", "#b48def", "#f4306d"];
+  this.confettiAnimations = ["slow", "medium", "fast"];
+
+  this._setupElements();
+  this._renderConfetti();
+};
+
+Confettiful.prototype._setupElements = function () {
+  const containerEl = document.createElement("div");
+  const elPosition = this.el.style.position;
+
+  if (elPosition !== "relative" || elPosition !== "absolute") {
+    this.el.style.position = "relative";
+  }
+
+  containerEl.classList.add("confetti-container");
+
+  this.el.appendChild(containerEl);
+
+  this.containerEl = containerEl;
+};
+
+Confettiful.prototype._renderConfetti = function () {
+  this.confettiInterval = setInterval(() => {
+    const confettiEl = document.createElement("div");
+    const confettiSize = Math.floor(Math.random() * 3) + 7 + "px";
+    const confettiBackground = this.confettiColors[
+      Math.floor(Math.random() * this.confettiColors.length)
+    ];
+    const confettiLeft = Math.floor(Math.random() * this.el.offsetWidth) + "px";
+    const confettiAnimation = this.confettiAnimations[
+      Math.floor(Math.random() * this.confettiAnimations.length)
+    ];
+
+    confettiEl.classList.add(
+      "confetti",
+      "confetti--animation-" + confettiAnimation
+    );
+    confettiEl.style.left = confettiLeft;
+    confettiEl.style.width = confettiSize;
+    confettiEl.style.height = confettiSize;
+    confettiEl.style.backgroundColor = confettiBackground;
+
+    confettiEl.removeTimeout = setTimeout(function () {
+      confettiEl.parentNode.removeChild(confettiEl);
+    }, 2000);
+
+    this.containerEl.appendChild(confettiEl);
+  }, 25);
+};
+
 
 // Array de imágenes
 const images = [
@@ -61,9 +119,9 @@ const images = [
   './assets/images/png/57.jpg',
   './assets/images/png/58.jpg',
   './assets/images/png/59.jpg'
-  // Agrega más rutas de imágenes según sea necesario
 ];
 
+//Array de Videos
 const videos = [
   './assets/images/png/1.mp4',
   './assets/images/png/2.mp4',
@@ -73,6 +131,8 @@ const videos = [
 let currentBackground = '';
 let isVideo = false;
 const backgroundContainer = document.getElementById('background-container');
+var firstTime = true;
+
 
 // Función para seleccionar un elemento al azar
 function getRandomElement(arr) {
@@ -80,20 +140,57 @@ function getRandomElement(arr) {
   return arr[randomIndex];
 }
 
+let lastVideoIndex = -1;
+let lastImageIndex = -1;
+
+function getRandomElementWithoutRepetition(array, lastIndex) {
+  let index;
+  do {
+    index = Math.floor(Math.random() * array.length);
+  } while (index === lastIndex);
+  return index;
+}
+
+
 // Función para cambiar la imagen o video de fondo
 function changeBackground() {
   // Decide aleatoriamente si usar una imagen o un video
   isVideo = Math.random() < 0.5;
+  window.confettiful = new Confettiful(document.querySelector(".confetti"));
+  document.querySelector('.confetti-container').style.visibility= "visible";
+  const confettiContainer = document.querySelector('.confetti-container');
+  confettiContainer.style.opacity = 1; // Asegurarse de que la opacidad esté al máximo
+  confettiContainer.style.display = "block";
+
+  if(firstTime) {
+    document.querySelector('.confetti-container').style.visibility= "hidden";
+    firstTime = false;
+    confettiContainer.style.opacity = 0;
+    confettiContainer.style.display = "none";
+  }
 
   if (isVideo) {
-    currentBackground = getRandomElement(videos);
+    const videoIndex = getRandomElementWithoutRepetition(videos, lastVideoIndex);
+    lastVideoIndex = videoIndex;
+    currentBackground = videos[videoIndex];
     backgroundContainer.style.backgroundImage = '';
     setVideoBackground(currentBackground);
   } else {
-    currentBackground = getRandomElement(images);
+    const imageIndex = getRandomElementWithoutRepetition(images, lastImageIndex);
+    lastImageIndex = imageIndex;
+    currentBackground = images[imageIndex];
     backgroundContainer.style.backgroundImage = `url(${currentBackground})`;
     removeVideoBackground();
   }
+
+  // Iniciar el temporizador para hacer desaparecer el confeti
+  setTimeout(() => {
+    confettiContainer.style.opacity = 0; // Cambiar la opacidad a 0
+    setTimeout(() => {
+      confettiContainer.style.visibility = "hidden"; // Ocultar el contenedor después de la transición
+      confettiContainer.style.display = "none";
+    }, 1000); // Esperar el tiempo de la transición antes de ocultar el contenedor
+  }, 1000); // Esperar 3 segundos antes de iniciar la desaparición
 }
 
 // Función para establecer un video como fondo
@@ -141,6 +238,7 @@ function removeVideoBackground() {
 
 // Función para descargar la imagen de fondo
 function downloadBackground() {
+  document.querySelector('.confetti-container').style.display= "none";
   fetch(currentBackground)
     .then(response => response.blob())
     .then(blob => {
@@ -162,8 +260,6 @@ changeBackground();
 // Añadir eventos a los botones
 document.getElementById('change-background-button').addEventListener('click', changeBackground);
 document.getElementById('download-background-button').addEventListener('click', downloadBackground);
-
-
 
 function getZoomLevel() {
   // Obtener el nivel de zoom basado en devicePixelRatio
@@ -191,116 +287,7 @@ function applyStylesBasedOnZoom() {
 window.addEventListener('load', applyStylesBasedOnZoom);
 window.addEventListener('resize', applyStylesBasedOnZoom);
 
-const Confettiful = function (el) {
-    this.el = el;
-    this.containerEl = null;
-  
-    this.confettiFrequency = 3;
-    this.confettiColors = ["#fce18a", "#ff726d", "#b48def", "#f4306d"];
-    this.confettiAnimations = ["slow", "medium", "fast"];
-  
-    this._setupElements();
-    this._renderConfetti();
-  };
-  
-  Confettiful.prototype._setupElements = function () {
-    const containerEl = document.createElement("div");
-    const elPosition = this.el.style.position;
-  
-    if (elPosition !== "relative" || elPosition !== "absolute") {
-      this.el.style.position = "relative";
-    }
-  
-    containerEl.classList.add("confetti-container");
-  
-    this.el.appendChild(containerEl);
-  
-    this.containerEl = containerEl;
-  };
-  
-  Confettiful.prototype._renderConfetti = function () {
-    this.confettiInterval = setInterval(() => {
-      const confettiEl = document.createElement("div");
-      const confettiSize = Math.floor(Math.random() * 3) + 7 + "px";
-      const confettiBackground = this.confettiColors[
-        Math.floor(Math.random() * this.confettiColors.length)
-      ];
-      const confettiLeft = Math.floor(Math.random() * this.el.offsetWidth) + "px";
-      const confettiAnimation = this.confettiAnimations[
-        Math.floor(Math.random() * this.confettiAnimations.length)
-      ];
-  
-      confettiEl.classList.add(
-        "confetti",
-        "confetti--animation-" + confettiAnimation
-      );
-      confettiEl.style.left = confettiLeft;
-      confettiEl.style.width = confettiSize;
-      confettiEl.style.height = confettiSize;
-      confettiEl.style.backgroundColor = confettiBackground;
-  
-      confettiEl.removeTimeout = setTimeout(function () {
-        confettiEl.parentNode.removeChild(confettiEl);
-      }, 3000);
-  
-      this.containerEl.appendChild(confettiEl);
-    }, 25);
-  };
-  
 
-
-  // Modals
-
-// Get the modal
-var modal = document.getElementById("myModal");
-var modalError = document.getElementById("modalError");
-// Get the button that opens the modal
-var btn = document.getElementById("appStoreBtn");
-
-// Get the <span> element that closes the modal
-var span = document.getElementsByClassName("close")[0];
-
-// Get the input field in the modal
-var modalInput = document.getElementById("modalInput");
-
-
-var loader = document.getElementById("loader");
-
-// When the user clicks on <span> (x), close the modal
-span.onclick = function() {
-    modal.style.display = "none";
-    modalInput.value = ""; // Clear the input field
-}
-
-// When the user clicks anywhere outside of the modal, close it
-window.onclick = function(event) {
-    if (event.target == modal2) {
-        modal.style.display = "none";
-        modalInput.value = ""; // Clear the input field
-    }
-}
-
-// When the user clicks anywhere outside of the modal, close it
-window.onclick = function(event) {
-    if (event.target == document.querySelector('.confetti-container')) {
-        document.querySelector('.modal.open').classList.remove('open');
-        document.querySelector('.confetti-container').style.display= "none";
-        document.body.classList.remove('modal-open');
-        modalInput.value = ""; // Clear the input field
-    }
-}
-
-
-function openModal(id) {
-    document.getElementById(id).classList.add('open');
-    document.body.classList.add('modal-open');
-    window.confettiful = new Confettiful(document.querySelector(".confetti"));
-}
-
-function openModalError(id) {
-    document.getElementById(id).classList.add('open');
-    document.body.classList.add('modal-open');
-}
 
 // close currently open modal
 function closeModal() {
